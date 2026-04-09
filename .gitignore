@@ -21,3 +21,6 @@ public/dist/
 *.excalidraw
 
 docs/
+AGENTS.md
+JOURNAL.md
+/journal/log.md
