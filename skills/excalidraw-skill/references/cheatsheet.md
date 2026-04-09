@@ -133,6 +133,7 @@ All scripts accept `--url <canvasUrl>` (defaults to `EXPRESS_SERVER_URL`).
 
 ```bash
 node scripts/healthcheck.cjs
+node scripts/start-canvas.cjs
 node scripts/clear-canvas.cjs
 node scripts/export-elements.cjs --out diagram.elements.json
 node scripts/import-elements.cjs --in diagram.elements.json --mode batch|sync
@@ -140,3 +141,5 @@ node scripts/create-element.cjs --data '{...}'
 node scripts/update-element.cjs --id <id> --data '{...}'
 node scripts/delete-element.cjs --id <id>
 ```
+
+`start-canvas.cjs` checks `/health` first and, if needed, starts `npm run canvas`. It resolves the repo root from `--repo`, `EXCALIDRAW_REPO_DIR`, the current directory, repo-relative layout, or `codex mcp list`.

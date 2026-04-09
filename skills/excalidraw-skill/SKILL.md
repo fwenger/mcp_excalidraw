@@ -1,11 +1,34 @@
 ---
 name: excalidraw-skill
-description: Programmatic canvas toolkit for creating, editing, and refining Excalidraw diagrams via MCP tools with real-time canvas sync. Use when an agent needs to (1) draw or lay out diagrams on a live canvas, (2) iteratively refine diagrams using describe_scene and get_canvas_screenshot to see its own work, (3) export/import .excalidraw files or PNG/SVG images, (4) save/restore canvas snapshots, (5) convert Mermaid to Excalidraw, or (6) perform element-level CRUD, alignment, distribution, grouping, duplication, and locking. Requires a running canvas server (EXPRESS_SERVER_URL, default http://localhost:3000).
+description: Programmatic canvas toolkit for creating, editing, and refining Excalidraw diagrams via MCP tools with real-time canvas sync. Use when an agent needs to (1) draw or lay out diagrams on a live canvas, (2) iteratively refine diagrams using describe_scene and get_canvas_screenshot to see its own work, (3) export/import .excalidraw files or PNG/SVG images, (4) save/restore canvas snapshots, (5) convert Mermaid to Excalidraw, or (6) perform element-level CRUD, alignment, distribution, grouping, duplication, and locking. The skill can bootstrap the local canvas server when the repo path is discoverable.
 ---
 
 # Excalidraw Skill
 
-## Step 0: Determine Connection Mode
+## Step 0: Ensure The Canvas Is Running
+
+Before choosing MCP vs REST, make sure the canvas is healthy. Run:
+
+```bash
+node scripts/start-canvas.cjs
+```
+
+What this does:
+- Checks `GET /health` at `EXPRESS_SERVER_URL` (default `http://localhost:3000`)
+- If the canvas is already up, it does nothing
+- If the canvas is down, it tries to start `npm run canvas` in the repo and waits until health passes
+
+Repo resolution order:
+1. `--repo /path/to/mcp_excalidraw`
+2. `EXCALIDRAW_REPO_DIR`
+3. current working directory
+4. repo-relative path when the skill is executed from inside the repo
+5. `codex mcp list` if Codex is installed and `excalidraw` is registered
+
+If auto-start fails, tell the user:
+> I couldn't locate the `mcp_excalidraw` repo to start the canvas automatically. Either set `EXCALIDRAW_REPO_DIR=/absolute/path/to/mcp_excalidraw` or run `HOST=127.0.0.1 PORT=3000 npm run canvas` in the repo manually.
+
+## Step 1: Determine Connection Mode
 
 Two modes are available. Try MCP first — it has more capabilities.
 
@@ -13,11 +36,11 @@ Two modes are available. Try MCP first — it has more capabilities.
 
 **REST API mode** (fallback): If MCP tools aren't available, use HTTP endpoints at `http://localhost:3000`. See the cheatsheet for REST payloads. Note the format differences in the table below — REST and MCP accept slightly different field names.
 
-**Neither works?** Tell the user:
-> The Excalidraw canvas server is not running. To set up:
+**Neither works after auto-start?** Tell the user:
+> The Excalidraw canvas server is still not available. To set up:
 > 1. `git clone https://github.com/yctimlin/mcp_excalidraw && cd mcp_excalidraw`
 > 2. `npm ci && npm run build`
-> 3. `PORT=3000 npm run canvas`
+> 3. `HOST=127.0.0.1 PORT=3000 npm run canvas`
 > 4. Open `http://localhost:3000` in a browser
 > 5. (Recommended) Install the MCP server:
 >    `claude mcp add excalidraw -s user -e EXPRESS_SERVER_URL=http://localhost:3000 -- node /path/to/mcp_excalidraw/dist/index.js`
